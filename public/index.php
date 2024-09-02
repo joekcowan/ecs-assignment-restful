@@ -7,8 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   header("location: login.php");
   exit;
 }
-$orders = getOrders($_SESSION["userid"]);
-
+$orders = getOrdersByUserId($_SESSION["userid"]);
 
 ?>
 <!doctype html>

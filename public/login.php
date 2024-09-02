@@ -9,48 +9,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  // Prepare a select statement
-  $sql = "SELECT id, username, password FROM users WHERE username = ?";
+  $userdata = getUser($username,$password); // will return null if unmatched
+  if(is_null($userdata)){
+    $alertText = "The username or password or you entered was not valid.";
+  }else{
+    // Password is correct, so start a new session
+    session_start();
 
-  $conn = create_conn();
-  if ($stmt = $conn->prepare($sql)) {
-      $stmt->bind_param("s", $username);
+    // Store data in session variables
+    $_SESSION["loggedin"] = true;
+    $_SESSION["userid"] = $userdata['id'];
+    $_SESSION["username"] = $userdata['username'];
 
-      if ($stmt->execute()) {
-          $stmt->store_result();
-
-          if ($stmt->num_rows == 1) {
-              $stmt->bind_result($id, $username, $hashed_password);
-
-              if ($stmt->fetch()) {
-                  if ($password === $hashed_password) {
-                      // Password is correct, so start a new session
-                      session_start();
-
-                      // Store data in session variables
-                      $_SESSION["loggedin"] = true;
-                      $_SESSION["userid"] = $id;
-                      $_SESSION["username"] = $username;
-
-                      // Redirect user to welcome page
-                      header("location: index.php");
-                  } else {
-                      // Display an error message if password is not valid
-                      $alertText = "The password you entered was not valid.";
-                  }
-              }
-          } else {
-              // Display an error message if username doesn't exist
-              $alertText = "No account found with that username.";
-          }
-      }
-
-      $stmt->close();
+    // Redirect user to welcome page
+    header("location: index.php");
   }
-
-  $conn->close();
 }
-
 
 ?>
 

@@ -2,78 +2,106 @@
 include '../config/config.php';
 
 /**
- * Creates a msqli connection object and returns it.
- * @return {object} $conn - Connection object.
- */
-function create_conn()
-{
-  // Create connection
-  $conn = new mysqli(HOSTNAME, USERNAME, PASSWORD, DATABASE);
-
-  // Check connection
-  if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-  } else {
-    return $conn;
-  }
-}
-
-/**
- * Gets order data.
- * @param {string} $userId - The user id to bind to the qry.
- * @return {array} $userData - The returned data from the qry.
- */
-function getOrders($userId)
-{
-  $conn = create_conn();
-  // Prepare the SQL statement
-  // Prepare the SQL statement
-  $sql = $conn->prepare("SELECT * FROM orders WHERE user_id = ?");
-  $sql->bind_param("i", $userId);
-
-  // Execute the query
-  $sql->execute();
-
-  // Get the result
-  $result = $sql->get_result();
-
-  // Fetch the data as an associative array
-  $userData = $result->fetch_all(MYSQLI_ASSOC);
-
-  // Close the connection
-  $sql->close();
-  $conn->close();
-
-  // Return the fetched data
-  return $userData;
-}
-
-/**
- * Gets the item data for any one order.
- * @param {string} $orderNo - The user order umber to bind to the qry.
- * @return {array} $orderData - The returned data from the qry.
+ * Gets orders items and customer details from firebase for a specific order.
+ * @param {string} $orderNo - the order number to get items from.
+ * @return {array} $user - returns the user data if any in an array of assoc arrays.
  */
 function getOrderDetails($orderNo)
 {
-  $conn = create_conn();
-  // Prepare the SQL statement
-  // Prepare the SQL statement
-  $sql = $conn->prepare("SELECT od.*, o.cust_name, o.cust_abbr FROM order_details as od INNER JOIN orders as o ON od.order_no = o.order_no  WHERE od.order_no = ?");
-  $sql->bind_param("i", $orderNo);
+  // Fetch order items
+  $orderItems = fetchFirebaseData('order-items');
+  // Fetch order data to get cust_name and cust_abbr
+  $orders = fetchFirebaseData('orders');
 
-  // Execute the query
-  $sql->execute();
+  $orderDetails = [];
 
-  // Get the result
-  $result = $sql->get_result();
+  // Find the relevant order based on order_no
+  $orderInfo = null;
+  foreach ($orders as $order) {
+    if ($order['order_no'] === $orderNo) {
+      $orderInfo = $order;
+      break;
+    }
+  }
 
-  // Fetch the data as an associative array
-  $orderData = $result->fetch_all(MYSQLI_ASSOC);
+  if ($orderInfo === null) {
+    return null; // No matching order found
+  }
 
-  // Close the connection
-  $sql->close();
-  $conn->close();
+  // Find order items associated with the given order_no
+  foreach ($orderItems as $item) {
+    if ($item['order_no'] === $orderNo) {
+      $item['cust_name'] = $orderInfo['cust_name'];
+      $item['cust_abbr'] = $orderInfo['cust_abbr'];
+      $orderDetails[] = $item;
+    }
+  }
 
-  // Return the fetched data
-  return $orderData;
+  return $orderDetails;
+}
+
+/**
+ * Gets orders from firebase for a specific user.
+ * @param {string} $userId - the user id to search orders by.
+ * @param {string} $password - the username password to search for.
+ * @return {array} $user - returns the user data if any in an array of assoc arrays.
+ */
+function getOrdersByUserId($userId)
+{
+  $orders = fetchFirebaseData('orders'); // Assuming your user data is stored under 'users'
+  $userOrders = [];
+  foreach ($orders as $order) {
+    if ($order['user_id'] === $userId) {
+      $userOrders[] = $order; // Add order to array if user_id matches
+    }
+  }
+
+  return $userOrders;
+}
+
+/**
+ * Gets users from firebase by username and password.
+ * @param {string} $username - the username to search for.
+ * @param {string} $password - the username password to search for.
+ * @return {array | null} $user - returns the user data in an assoc array if present | returns null if no user matches.
+ */
+function getUser($username, $password)
+{
+  $users = fetchFirebaseData('users'); // Assuming your user data is stored under 'users'
+
+  foreach ($users as $user) {
+    if ($user['username'] === $username && $user['password'] === $password) {
+      return $user;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Fetches data from firebase real time database.
+ * @param {string} $resource - the resource to fetch.
+ * @return {array} $data - returns the data.
+ */
+function fetchFirebaseData($resource)
+{
+  $url = FIREBASE_URL . $resource . '.json';
+
+  $options = [
+    'http' => [
+      'method'  => 'GET',
+      'header'  => 'Accept: application/json',
+    ],
+  ];
+
+  $context  = stream_context_create($options);
+  $response = file_get_contents($url, false, $context);
+
+  if ($response === FALSE) {
+    throw new Exception('Error fetching data from Firebase.');
+  }
+
+  $data = json_decode($response, true);
+
+  return $data;
 }

@@ -8,8 +8,6 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   exit;
 }
 
-$orders = getOrders($_SESSION["userid"]);
-
 // check for order no.
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
   $orderNo = $_GET['order_no'];
