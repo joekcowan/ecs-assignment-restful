@@ -48,11 +48,11 @@ function getOrderDetails($orderNo)
  */
 function getOrdersByUserId($userId)
 {
-  $orders = fetchFirebaseData('orders'); // Assuming your user data is stored under 'users'
+  $orders = fetchFirebaseData('orders');
   $userOrders = [];
   foreach ($orders as $order) {
     if ($order['user_id'] === $userId) {
-      $userOrders[] = $order; // Add order to array if user_id matches
+      $userOrders[] = $order;
     }
   }
 
