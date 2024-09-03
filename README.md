@@ -3,7 +3,7 @@ ASSIGNMENT (PHP) RESTFUL
 Overview
 This project is a full-stack PHP application that simulates user login and order checking functionalities. It demonstrates how to implement basic user authentication and view dynamic data through a fullstack project.
    - Frontend: boostrap, html, css
-   - Middlewear: php
+   - Middleware: php
    - Backend: firebase real-time database (NoSQL)
 
 Notes:
