@@ -67,7 +67,7 @@ function getOrdersByUserId($userId)
  */
 function getUser($username, $password)
 {
-  $users = fetchFirebaseData('users'); // Assuming your user data is stored under 'users'
+  $users = fetchFirebaseData('users');
 
   foreach ($users as $user) {
     if ($user['username'] === $username && $user['password'] === $password) {
