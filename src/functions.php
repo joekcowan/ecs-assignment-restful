@@ -8,36 +8,40 @@ include '../config/config.php';
  */
 function getOrderDetails($orderNo)
 {
-  // Fetch order items
-  $orderItems = fetchFirebaseData('order-items');
-  // Fetch order data to get cust_name and cust_abbr
-  $orders = fetchFirebaseData('orders');
+  try {
+    // Fetch order items
+    $orderItems = fetchFirebaseData('order-items');
+    // Fetch order data to get cust_name and cust_abbr
+    $orders = fetchFirebaseData('orders');
 
-  $orderDetails = [];
+    $orderDetails = [];
 
-  // Find the relevant order based on order_no
-  $orderInfo = null;
-  foreach ($orders as $order) {
-    if ($order['order_no'] === $orderNo) {
-      $orderInfo = $order;
-      break;
+    // Find the relevant order based on order_no
+    $orderInfo = null;
+    foreach ($orders as $order) {
+      if ($order['order_no'] === $orderNo) {
+        $orderInfo = $order;
+        break;
+      }
     }
-  }
 
-  if ($orderInfo === null) {
-    return null; // No matching order found
-  }
-
-  // Find order items associated with the given order_no
-  foreach ($orderItems as $item) {
-    if ($item['order_no'] === $orderNo) {
-      $item['cust_name'] = $orderInfo['cust_name'];
-      $item['cust_abbr'] = $orderInfo['cust_abbr'];
-      $orderDetails[] = $item;
+    if ($orderInfo === null) {
+      return null; // No matching order found
     }
-  }
 
-  return $orderDetails;
+    // Find order items associated with the given order_no
+    foreach ($orderItems as $item) {
+      if ($item['order_no'] === $orderNo) {
+        $item['cust_name'] = $orderInfo['cust_name'];
+        $item['cust_abbr'] = $orderInfo['cust_abbr'];
+        $orderDetails[] = $item;
+      }
+    }
+
+    return $orderDetails;
+  } catch (Exception $e) {
+    echo 'Caught exception: ', $e->getMessage(), "\n";
+  }
 }
 
 /**
@@ -48,15 +52,19 @@ function getOrderDetails($orderNo)
  */
 function getOrdersByUserId($userId)
 {
-  $orders = fetchFirebaseData('orders');
-  $userOrders = [];
-  foreach ($orders as $order) {
-    if ($order['user_id'] === $userId) {
-      $userOrders[] = $order;
+  try {
+    $orders = fetchFirebaseData('orders');
+    $userOrders = [];
+    foreach ($orders as $order) {
+      if ($order['user_id'] === $userId) {
+        $userOrders[] = $order;
+      }
     }
-  }
 
-  return $userOrders;
+    return $userOrders;
+  } catch (Exception $e) {
+    echo 'Caught exception: ', $e->getMessage(), "\n";
+  }
 }
 
 /**
@@ -67,15 +75,19 @@ function getOrdersByUserId($userId)
  */
 function getUser($username, $password)
 {
-  $users = fetchFirebaseData('users');
+  try {
+    $users = fetchFirebaseData('users');
 
-  foreach ($users as $user) {
-    if ($user['username'] === $username && $user['password'] === $password) {
-      return $user;
+    foreach ($users as $user) {
+      if ($user['username'] === $username && $user['password'] === $password) {
+        return $user;
+      }
     }
-  }
 
-  return null;
+    return null;
+  } catch (Exception $e) {
+    echo 'Caught exception: ', $e->getMessage(), "\n";
+  }
 }
 
 /**
@@ -85,23 +97,27 @@ function getUser($username, $password)
  */
 function fetchFirebaseData($resource)
 {
-  $url = FIREBASE_URL . $resource . '.json';
+  try {
+    $url = FIREBASE_URL . $resource . '.json';
 
-  $options = [
-    'http' => [
-      'method'  => 'GET',
-      'header'  => 'Accept: application/json',
-    ],
-  ];
+    $options = [
+      'http' => [
+        'method'  => 'GET',
+        'header'  => 'Accept: application/json',
+      ],
+    ];
 
-  $context  = stream_context_create($options);
-  $response = file_get_contents($url, false, $context);
+    $context  = stream_context_create($options);
+    $response = file_get_contents($url, false, $context);
 
-  if ($response === FALSE) {
-    throw new Exception('Error fetching data from Firebase.');
+    if ($response === FALSE) {
+      throw new Exception('Error fetching data from Firebase.');
+    }
+
+    $data = json_decode($response, true);
+
+    return $data;
+  } catch (Exception $e) {
+    echo 'Caught exception: ', $e->getMessage(), "\n";
   }
-
-  $data = json_decode($response, true);
-
-  return $data;
 }

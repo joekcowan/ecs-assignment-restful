@@ -14,6 +14,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
   $order_details = getOrderDetails($orderNo);
 }
 
+// redirects user if accessed incorrectly or if no data was passed
+if(!isset($orderNo)){
+  header("location: index.php");
+  exit;
+}
+
 ?>
 <!doctype html>
 <html lang="en">
