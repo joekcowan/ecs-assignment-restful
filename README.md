@@ -18,10 +18,10 @@ Features
 - User-specific order viewing.
 
 Requirements
-- A local server environment such as MAMP or WAMP or XAMP.
+- A local server environment such as MAMP or WAMP or XAMP. (I used a free version of MAMP here: https://www.mamp.info/en/mac/ )
 
 Installation
-- There are several ways you can install this project locally. I recommend downloading a zip file and opening the "public/index.php" file in your browser. In github, click on the "<> Code" button to see which works best for you.
+- There are several ways you can install this project locally. I recommend downloading a zip file and opening the "public/index.php" file in your browser. In github, click on the "<> Code" button to see which option works best for you.
 - If using a local sever, you will need to have that running while accessing the code library in your browser (e.g., http://localhost:xxxx/public/index.php).
 
 Usage
