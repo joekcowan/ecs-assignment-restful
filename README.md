@@ -40,5 +40,13 @@ Usage
 
 Folder Structure
 public/ - Publicly accessible files (e.g., index.php, assets)
+   index.php - the main landing page where user can view orders. Fetches orders and will redirect if there is no login session.
+   login.php - handles login process such as validating credentials with db, startes a login session if the user is valid.
+   logout.php - handles logout procedure; ends session, redirects user.
+   nav_content.php - a section of code dedicated to reusable navigational content and then included in index.php & order_details.php
+   order-details.php - displays the order items for the clicked order, redirects user if accessed incorrectly or without data.
 src/ - PHP source code
-config/ - Configuration files (somewhat redundant due to the simplicity of using firebase's REST access, but if an authentication key was needed etc, this file would prove more useful).
+   functions.php - the main fetch functions.
+config/ - Configuration files.
+   config.php - has a set constrant for the firebase url used in fetch functions.
+project-data.json - an example file to display how data is contained in the firebase.
